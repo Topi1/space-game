@@ -1,45 +1,47 @@
-import Phaser from 'phaser';
-import UIScene from './UIScene.js';
-import eventsCenter from './EventsCenter.js';
+import Phaser from 'phaser'
+import UIScene from './UIScene.js'
+import eventsCenter from './EventsCenter.js'
 
 const sizes = {
   width: 600,
   height: 700
 };
 
-const speedDown = 260;
+const speedDown = 260
 
-let enemies;
-let enemyCount = 0;
-let bossSpawnCounter = 0;
-let timer;
-let enemyFireTimer;
+let enemies
+let enemyCount = 0
+let bossSpawnCounter = 0
+let timer
+let enemyFireTimer
 
 export default class GameScene extends Phaser.Scene {
 
   constructor() {
-    super("scene-game");
+    super("scene-game")
     this.enemy = null; // Lisätty enemy-muuttuja luokan tasolle ja alustettu se null-arvolla
-    this.player;
-    this.cursor;
-    this.playerSpeed = speedDown + 50;
-    this.laserGroup;
-    this.enemyLasers;
+    this.player
+    this.cursor
+    this.playerSpeed = speedDown + 50
+    this.laserGroup
+    this.enemyLasers
   }
 
   preload() {
-    this.load.image("bg", "./assets/level1Stars.png");
-    this.load.image("colorBG", "./assets/levelBG.png");
-    this.load.image("player", "./assets/player.png");
-    this.load.image("laser", "./assets/bullet.png");
-    this.load.image("fighterEnemy", "./assets/baseEnemy.png");
-    this.load.audio("level1Song", ["./assets/level1Song.mp3"]);
-    this.load.audio("laserSound", ["./assets/laser.mp3"]);
+    this.load.image("bg", "./assets/level1Stars.png")
+    this.load.image("colorBG", "./assets/levelBG.png")
+    this.load.image("player", "./assets/player.png")
+    this.load.image("laser", "./assets/bullet.png")
+    this.load.image("enemyLaser", "./assets/enemyLaser.png")
+    this.load.image("fighterEnemy", "./assets/baseEnemy.png")
+    this.load.audio("level1Song", ["./assets/level1Song.mp3"])
+    this.load.audio("laserSound", ["./assets/laser.mp3"])
+    this.load.audio("enemyDeath", ["./assets/enemyDeath.mp3"])
   }
 
   create() {
-    this.physics.world.setBounds(0, 0, 600, 700);
-    this.scene.launch("scene-UI");
+    this.physics.world.setBounds(0, 0, 600, 700)
+    this.scene.launch("scene-UI")
 
     this.backGround = this.add.tileSprite(0, 0, 0, 0, "bg").setOrigin(0, 0);
     this.backGround.depth = 0;
@@ -54,6 +56,16 @@ export default class GameScene extends Phaser.Scene {
       delay: 0
     };
 
+    this.enemyDeath = this.sound.add("enemyDeath");
+    this.enemyDeathConfig = {
+      mute: 0,
+      volume: 0.4,
+      seek: 0,
+      loop: false,
+      delay: 0
+    };
+
+
     this.levelMusic = this.sound.add("level1Song");
     var musicConfig = {
       mute: 0,
@@ -66,6 +78,7 @@ export default class GameScene extends Phaser.Scene {
 
     this.player = this.physics.add.sprite(300, 500, "player");
     this.player.setScale(1);
+    this.player.setSize(25, 20)
     this.player.body.allowGravity = false;
     this.player.setCollideWorldBounds(true);
     this.player.health = 5;
@@ -123,13 +136,13 @@ export default class GameScene extends Phaser.Scene {
 
   spawnEnemy() {
     if (enemyCount <= 9) {
-      enemyCount = enemyCount + 1;
+      enemyCount = enemyCount + 1
       console.log("SPAWN");
-      console.log("ENEMY COUNTS IS: " + enemyCount);
+      console.log("ENEMY COUNTS IS: " + enemyCount)
 
-      const bounds = this.physics.world.bounds;
-      const posX = Phaser.Math.Between(bounds.x + 50, bounds.x + bounds.width - 50);
-      const posY = Phaser.Math.Between(bounds.y, bounds.y + bounds.height * 0.5);
+      const bounds = this.physics.world.bounds
+      const posX = Phaser.Math.Between(bounds.x + 50, bounds.x + bounds.width - 50)
+      const posY = Phaser.Math.Between(bounds.y + 100, bounds.y + bounds.height * 0.5)
 
       const dx = this.player.x - posX
       const dy = this.player.y - posY
@@ -140,16 +153,17 @@ export default class GameScene extends Phaser.Scene {
       const dVelocityX = Math.cos(angle) * speed
       const dVelocityY = Math.sin(angle) * speed
 
-      this.enemy = this.physics.add.sprite(posX, bounds.y - 35, "fighterEnemy");
+      this.enemy = this.physics.add.sprite(posX, bounds.y - 35, "fighterEnemy")
       this.enemy.angle = 180;
       this.enemy.scale = 1;
+      this.enemy.setSize(20, 20)
       this.enemy.health = 3;
       
       this.enemy.setPushable(false);
       this.physics.add.collider(this.player, this.enemy);
       this.physics.add.collider(this.collWall, this.enemy);
 
-      this.enemy.setVelocity(dVelocityX,dVelocityY)
+      //this.enemy.setVelocity(dVelocityX,dVelocityY)
 
       enemies.add(this.enemy);
 
@@ -181,6 +195,7 @@ export default class GameScene extends Phaser.Scene {
 
     if (enemy.health <= 0) {
       enemy.destroy();
+      this.enemyDeath.play(this.enemyDeathConfig);
       console.log("DESTROYED");
       enemyCount = enemyCount - 1
       bossSpawnCounter = bossSpawnCounter + 1;
@@ -189,12 +204,17 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
+  shakeCamera(duration, intensity) {
+    this.cameras.main.shake(duration, intensity)
+  }
+
   onPlayerHit(player, enemyLaser) {
     this.hp -= 1;
     eventsCenter.emit('update-hp', this.hp);
     console.log('PLAYER HIT! HP:', this.hp);
 
     enemyLaser.destroy();
+    this.shakeCamera(50, 0.01)
   }
 
   update() {
@@ -230,13 +250,13 @@ export default class GameScene extends Phaser.Scene {
   }
 
   enemyShoot(enemy) {
-    const enemyLaser = this.enemyLasers.create(enemy.x, enemy.y, "laser");
+    const enemyLaser = this.enemyLasers.create(enemy.x, enemy.y, "enemyLaser");
     enemyLaser.setVelocityY(300);
   }
 
   enemyFire() {
     enemies.getChildren().forEach((enemy, index) => {
-      const fireDelay = 1000 * index; // Asetetaan eri viive kullekin viholliselle
+      const fireDelay = Phaser.Math.Between(1000, 4000)
       this.time.delayedCall(fireDelay, () => {
         this.enemyShoot(enemy);
       });

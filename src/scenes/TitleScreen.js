@@ -2,7 +2,7 @@ import Phaser from "phaser";
 
 import WebFontFile from "./WebFontFile.js";
 
-//import GameScene from "./Game";
+
 
 
 export default class TitleScreen extends Phaser.Scene
@@ -11,8 +11,6 @@ export default class TitleScreen extends Phaser.Scene
         super("scene-title")
     }
     preload() {
-        //const fonts = new WebFontFile(this.load, 'Bruno Ace SC')
-        //this.load.addFile(fonts)
         this.load.addFile(new WebFontFile(this.load, [
             'Bruno Ace SC',
             'Potta One',
@@ -22,6 +20,8 @@ export default class TitleScreen extends Phaser.Scene
         this.load.image("starBG", "./assets/starBG.png")
         this.load.image("star", "./assets/star2.png")
         this.load.image("star2", "./assets/star3.png")
+        this.load.image("spaceBar", "./assets/spaceBar.png")
+        this.load.image("arrowKeys", "./assets/arrowKeys.png")
         this.load.audio("menuMusic", ["./assets/menuSong.mp3"])
     }
 
@@ -43,7 +43,7 @@ export default class TitleScreen extends Phaser.Scene
         }
         this.menuMusic.play(musicConfig)
 
-        this.title = this.add.text(300,250, "SPACE MAYHEM:", {
+        this.title = this.add.text(300,200, "SPACE MAYHEM:", {
             fontSize: 35,
             fontFamily: '"Bruno Ace SC"',
             textDecoration: "overline",
@@ -54,39 +54,56 @@ export default class TitleScreen extends Phaser.Scene
 
         this.title.depth = 2
 
-        this.smallTitle = this.add.text(290,280, "Fermi Paradox", {
+        this.smallTitle = this.add.text(290,230, "Survivor", {
             fontSize: 30,
             fontFamily: '"VT323"',
             fill: "#ffa126"
             
         })
-
         this.smallTitle.depth = 2
 
-        this.startText = this.add.text(300,500, "PRESS SPACE TO START", {
+        this.instruction = this.add.text(300,370, "HOW TO PLAY:", {
+            fontSize: 22,
+            fontFamily: '"VT323"',
+            fill: "#ffa126"
+            
+        }).setOrigin(0.5,0.5)
+
+        this.shootInstruc = this.add.text(200,500, "to shoot", {
+            fontSize: 22,
+            fontFamily: '"VT323"',
+            fill: "#ffa126"
+            
+        }).setOrigin(0.5,0.5)
+        this.moveInstruc = this.add.text(400,500, "to move", {
+            fontSize: 22,
+            fontFamily: '"VT323"',
+            fill: "#ffa126"
+            
+        }).setOrigin(0.5,0.5)
+
+        
+
+        this.startText = this.add.text(300,600, "PRESS SPACE TO START PLAYING", {
             fontSize: 22,
             fontFamily: '"VT323"',
             fill: "#ffa126"
         })
         this.startText.setOrigin(0.5,0.5)
 
-        /*this.scrollText = new ScrollText({
-            'scene': this,
-            'text': this.startText,
-            'speed': 10,
-            //'style': style,
-            'y':200
-        })*/
-        //this.scrollText.getText().setStroke('#2980b9', 6)
-
-        this.star = this.add.sprite(175,250,"star")
+        this.star = this.add.sprite(175,200,"star")
         this.star.depth=1
 
-        this.star2 = this.add.sprite(175,250,"star2")
+        this.star2 = this.add.sprite(175,200,"star2")
         this.star2.depth = 0
 
-
+        this.spaceBar = this.add.sprite(200, 450, "spaceBar").setOrigin(0.5,0.5)
+        this.spaceBar.depth = 3
+        this.spaceBar.scale = 0.4
         
+        this.arrowKeys = this.add.sprite(400, 450, "arrowKeys").setOrigin(0.5,0.5)
+        this.arrowKeys.depth = 3
+        this.arrowKeys.scale = 0.4
 
         this.input.keyboard.once("keydown-SPACE", () => {
             this.scene.start("scene-game")
@@ -96,29 +113,8 @@ export default class TitleScreen extends Phaser.Scene
 
     update() {
         this.star.angle += 0.15
-        //this.star2.angle += 0.1
         this.starBackground.tilePositionX += 0.4
         this.starBackground.tilePositionY -= 0.3
-
-
-        /*if (this.title.scaleX <= 1.1) {
-
-            this.title.scaleX += 0.005
-
-        } else if (this.title.scaleX >= 1.1) {
-        
-                this.title.scaleX =- 1
-        }
-
-        if (this.smallTitle.scaleX <= 1.1) {
-
-            this.smallTitle.scaleX += 0.005
-
-        } else if (this.smallTitle.scaleX >= 1.1) {
-            
-                this.smallTitle.scaleX =- 1
-        } */
-            
         
     }
 }
