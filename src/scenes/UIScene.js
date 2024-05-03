@@ -15,7 +15,7 @@ export default class UIScene extends Phaser.Scene
     }
 
     create() {
-        this.healthBar = this.add.sprite(500,10,"healthBar", 8)
+        this.healthBar = this.add.sprite(500,20,"healthBar", 8)
         this.healthBar.depth = 5
         this.healthBar.scale = 2
 

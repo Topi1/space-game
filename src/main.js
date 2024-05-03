@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import GameScene from './scenes/Game.js'
 import TitleScreen from './scenes/TitleScreen.js'
 import UIScene from './scenes/UIScene.js'
+import GameOver from './scenes/GameOver.js';
 
 
 const config = {
@@ -25,7 +26,8 @@ const config = {
         
         TitleScreen,
         GameScene,
-        UIScene
+        UIScene,
+        GameOver
         
     ]
 };

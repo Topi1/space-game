@@ -34,9 +34,11 @@ export default class GameScene extends Phaser.Scene {
     this.load.image("laser", "./assets/bullet.png")
     this.load.image("enemyLaser", "./assets/enemyLaser.png")
     this.load.image("fighterEnemy", "./assets/baseEnemy.png")
+    
     this.load.audio("level1Song", ["./assets/level1Song.mp3"])
     this.load.audio("laserSound", ["./assets/laser.mp3"])
     this.load.audio("enemyDeath", ["./assets/enemyDeath.mp3"])
+    this.load.audio("playerDeath", ["./assets/playerDeath.mp3"])
   }
 
   create() {
@@ -65,6 +67,15 @@ export default class GameScene extends Phaser.Scene {
       delay: 0
     };
 
+    this.playerDeath = this.sound.add("playerDeath");
+    this.playerDeathConfig = {
+      mute: 0,
+      volume: 0.7,
+      seek: 0,
+      loop: false,
+      delay: 0
+    };
+
 
     this.levelMusic = this.sound.add("level1Song");
     var musicConfig = {
@@ -84,11 +95,7 @@ export default class GameScene extends Phaser.Scene {
     this.player.health = 5;
     this.hp = 5;
 
-    this.input.keyboard.on('keydown-SPACE', () => {
-      --this.hp;
-      eventsCenter.emit('update-hp', this.hp);
-      console.log(this.hp);
-    });
+    
 
     this.collWall = this.add.rectangle(300, 300, sizes.width, 10);
     this.physics.add.existing(this.collWall, true);
@@ -119,6 +126,7 @@ export default class GameScene extends Phaser.Scene {
     // Lisätään törmäyksen käsittelijä pelaajan ja vihollisammusten välille
     this.physics.add.overlap(this.player, this.enemyLasers, this.onPlayerHit, null, this);
 
+
     // Luodaan toistuva ajastin vihollisten ampumiseksi jatkuvasti
     timer = this.time.addEvent({
       delay: Phaser.Math.Between(900, 1700),
@@ -142,16 +150,13 @@ export default class GameScene extends Phaser.Scene {
 
       const bounds = this.physics.world.bounds
       const posX = Phaser.Math.Between(bounds.x + 50, bounds.x + bounds.width - 50)
-      const posY = Phaser.Math.Between(bounds.y + 100, bounds.y + bounds.height * 0.5)
+      const posY = Phaser.Math.Between(bounds.y, bounds.y + bounds.height * 0.5)
 
-      const dx = this.player.x - posX
-      const dy = this.player.y - posY
-      const angle = Math.atan2(dy,dx)
+      
     
       const speed = 100
 
-      const dVelocityX = Math.cos(angle) * speed
-      const dVelocityY = Math.sin(angle) * speed
+      
 
       this.enemy = this.physics.add.sprite(posX, bounds.y - 35, "fighterEnemy")
       this.enemy.angle = 180;
@@ -163,18 +168,18 @@ export default class GameScene extends Phaser.Scene {
       this.physics.add.collider(this.player, this.enemy);
       this.physics.add.collider(this.collWall, this.enemy);
 
-      //this.enemy.setVelocity(dVelocityX,dVelocityY)
+     
 
       enemies.add(this.enemy);
 
-      const velocityX = Phaser.Math.Between(-400,400);
-      const velocityY = Phaser.Math.Between(0, 50);
+      const velocityX = Phaser.Math.Between(-200,200);
+      const velocityY = Phaser.Math.Between(1, 10);
 
       const tween = this.tweens.add({
         targets: this.enemy,
         x: posX + velocityX,
         y: posY + velocityY,
-        duration: 6000,
+        duration: 3000,
         ease: "Sine.easeInOut",
         repeat: -1,
         yoyo: true
@@ -191,18 +196,17 @@ export default class GameScene extends Phaser.Scene {
   onShotEnemyCollide(laserGroup, enemy) {
     laserGroup.destroy();
     enemy.health = enemy.health - 1;
-    console.log("ENEMY HP:" + enemy.health);
+    
 
     if (enemy.health <= 0) {
       enemy.destroy();
       this.enemyDeath.play(this.enemyDeathConfig);
-      console.log("DESTROYED");
+      
       enemyCount = enemyCount - 1
       bossSpawnCounter = bossSpawnCounter + 1;
-      console.log("ENEMY COUNTS IS: " + enemyCount);
-      console.log("Boss Counter is:" + bossSpawnCounter);
     }
   }
+
 
   shakeCamera(duration, intensity) {
     this.cameras.main.shake(duration, intensity)
@@ -211,13 +215,20 @@ export default class GameScene extends Phaser.Scene {
   onPlayerHit(player, enemyLaser) {
     this.hp -= 1;
     eventsCenter.emit('update-hp', this.hp);
-    console.log('PLAYER HIT! HP:', this.hp);
 
     enemyLaser.destroy();
     this.shakeCamera(50, 0.01)
   }
 
   update() {
+
+    if(this.hp <= 0){
+      enemyCount = 0
+      this.playerDeath.play(this.playerDeathConfig);
+      this.scene.start("scene-gameover")
+      this.levelMusic.stop();
+    }
+
     this.backGround.tilePositionY -= 0.9;
     const { left, right, up, down } = this.cursor;
 

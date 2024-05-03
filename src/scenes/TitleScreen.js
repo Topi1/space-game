@@ -54,7 +54,7 @@ export default class TitleScreen extends Phaser.Scene
 
         this.title.depth = 2
 
-        this.smallTitle = this.add.text(290,230, "Survivor", {
+        this.smallTitle = this.add.text(310,230, "Survivor", {
             fontSize: 30,
             fontFamily: '"VT323"',
             fill: "#ffa126"
